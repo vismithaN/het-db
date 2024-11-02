@@ -137,7 +137,6 @@ public class ProfileServlet extends HttpServlet {
             }
             rs.close();
             stmt.close();
-            conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
