@@ -3,10 +3,17 @@
   "websites":[
     {
       "title":"<title of the page>",
-      "url":"<url>",
+      "url":"https://www.javatpoint.com/PreparedStatement-interface",
       "code":"<explain in which part of your code did you use the snippet or idea>",
       "description":"<additional information you may find necessary to provide>"
-    }
+    },
+    {
+          "title":"<title of the page>",
+          "url":"https://www.tutorialspoint.com/jdbc/jdbc-sample-code.htm",
+          "code":"<explain in which part of your code did you use the snippet or idea>",
+          "description":"<additional information you may find necessary to provide>"
+        }
+
   ],
   "collaborators":[
     {
