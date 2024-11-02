@@ -104,7 +104,7 @@ public class FollowerServlet extends HttpServlet {
     public JsonArray getFollowers(String id) {
         JsonArray followers = new JsonArray();
         String query = "MATCH (follower:User)-[:FOLLOWS]->(followee:User) " +
-                "WHERE followee.id = $id " +
+                "WHERE followee.username = $id " +
                 "RETURN follower.username AS username, follower.url AS url " +
                 "ORDER BY follower.username ASC";
         try (Session session = driver.session()) {
