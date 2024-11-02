@@ -1,1 +1,1 @@
-module.exports = "<the external IP of the backend instance>";
+module.exports = "20.186.177.206";
