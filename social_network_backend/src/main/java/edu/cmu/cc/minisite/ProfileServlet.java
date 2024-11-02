@@ -64,7 +64,7 @@ public class ProfileServlet extends HttpServlet {
     /**
      * MySQL URL.
      */
-    private static final String URL = "jdbc:mysql://" + mysqlHost + ":3306/"
+    private static final String URL = "jdbc:mysql://" + "social-network-mysql98wy9d58.mysql.database.azure.com" + ":3306/"
             + DB_NAME + "?useSSL=false&serverTimezone=UTC";
 
     /**
@@ -86,7 +86,7 @@ public class ProfileServlet extends HttpServlet {
     }
 
     private Connection getDBConnection() throws SQLException {
-        Objects.requireNonNull(mysqlHost);
+        Objects.requireNonNull("social-network-mysql98wy9d58.mysql.database.azure.com");
         Objects.requireNonNull(mysqlName);
         Objects.requireNonNull(mysqlPwd);
         return DriverManager.getConnection(URL, mysqlName, mysqlPwd);
