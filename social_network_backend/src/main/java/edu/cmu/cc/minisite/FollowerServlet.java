@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
 
 /**
  * Task 2:
@@ -103,7 +106,23 @@ public class FollowerServlet extends HttpServlet {
      */
     public JsonArray getFollowers(String id) {
         JsonArray followers = new JsonArray();
-        // TODO: To be implemented
+        String query = "MATCH (follower:User)-[r:FOLLOWS]->(followee:User) \n" +
+                "WHERE followee.username = id\n" +
+                "RETURN follower.username, follower.url \n" +
+                "ORDER BY follower.username asc";
+        try (Session session = driver.session()) {
+            StatementResult rs = session.run(query);
+            while (rs.hasNext()) {
+                Record record = rs.next();
+                JsonObject follower = new JsonObject();
+                follower.addProperty("name", record.get("username").toString());
+                follower.addProperty("profile", record.get("url").toString());
+                followers.add(follower);
+                System.out.println(record.get(0).asString());
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
         return followers;
     }
 }
