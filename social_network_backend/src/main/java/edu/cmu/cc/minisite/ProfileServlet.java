@@ -135,16 +135,12 @@ public class ProfileServlet extends HttpServlet {
                 result.addProperty("name", "Unauthorized");
                 result.addProperty("profile", "#");
             }
+            rs.close();
+            stmt.close();
+            conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        // Use PreparedStatements, use ResultSet.getString(String columnLabel)
-        // instead of ResultSet.getString(int columnIndex) for the test cases to work.
-        // You may also look at them for expected behavior.
-        // Ensure you match the schema of the JsonObject as per the expected
-        // response of the service, and never pass/store unhashed passwords!
-
         return result;
     }
 }
