@@ -117,6 +117,7 @@ public class FollowerServlet extends HttpServlet {
                 followers.add(follower);
             }
         } catch (Exception e) {
+            System.err.println("Error: Unable to retrieve followers for user ID: " + id);
             e.printStackTrace();
         }
         return followers;
