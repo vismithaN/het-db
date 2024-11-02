@@ -7,9 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Objects;
 
 /**
@@ -124,9 +122,23 @@ public class ProfileServlet extends HttpServlet {
      */
     JsonObject validateLoginAndReturnResult(String name, String pwd) {
         JsonObject result = new JsonObject();
-        String query = "SELECT A FROM B WHERE C = ? AND D = ?";
+        String query = "SELECT username, profile_photo_url FROM users WHERE username = ? AND pwd = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1,name);//1 specifies the first parameter in the query
+            stmt.setString(2,pwd);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                result.addProperty("name", rs.getString("username"));
+                result.addProperty("profile", rs.getString("profile_photo_url"));
+            } else {
+                result.addProperty("name", "Unauthorized");
+                result.addProperty("profile", "#");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
-        // TODO: To be implemented
         // Use PreparedStatements, use ResultSet.getString(String columnLabel)
         // instead of ResultSet.getString(int columnIndex) for the test cases to work.
         // You may also look at them for expected behavior.
