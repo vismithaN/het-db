@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +39,7 @@ public class TimelineServlet extends HttpServlet {
      * Your initialization code goes here.
      */
     public TimelineServlet() {
+
     }
 
     /**
@@ -73,6 +75,19 @@ public class TimelineServlet extends HttpServlet {
     private String getTimeline(String id) {
         JsonObject result = new JsonObject();
         // TODO: implement this method
+        try{
+            //Task1
+            ProfileServlet profileServlet = new ProfileServlet();
+            JsonObject userProfile = profileServlet.validateLoginAndReturnResult(id); // Assuming getUserProfile method returns JsonObject with name and profile
+            result.addProperty("name", userProfile.get("name").getAsString());
+            result.addProperty("profile", userProfile.get("profile").getAsString());
+            FollowerServlet followerServlet = new FollowerServlet();
+            HomepageServlet homepageServlet = new HomepageServlet();
+        } catch (Exception e) {
+            System.err.println("Error: Unable to retrieve comments for user: " + id);
+            e.printStackTrace();
+
+        }
         return result.toString();
     }
 }
