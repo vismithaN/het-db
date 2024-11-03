@@ -90,6 +90,7 @@ public class TimelineServlet extends HttpServlet {
             task3(result,id); // Task3
         } catch (Exception e) {
             System.err.println("Error: Unable to retrieve timeline for user: " + id +e.getMessage());
+            e.printStackTrace();
         }
         return result.toString();
     }
