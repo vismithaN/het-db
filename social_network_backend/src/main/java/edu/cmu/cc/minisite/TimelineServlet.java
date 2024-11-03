@@ -142,7 +142,6 @@ public class TimelineServlet extends HttpServlet {
     private void task3(JsonObject result, String id) {
         HomepageServlet homepageServlet = new HomepageServlet();
         List<String> followeesIDList = getFollowees(id);
-        System.out.println("Followees List " + followeesIDList.toString());
 
         Bson filter = in("uid",followeesIDList);
         JsonArray followeesComments = homepageServlet.executeQuery(filter);
@@ -154,12 +153,10 @@ public class TimelineServlet extends HttpServlet {
             JsonObject parent = homepageServlet.findParentsComments(child.get("parent_id").getAsString());
             if(parent!=null) {
                 child.add("parent", parent);
-                System.out.println("Child after adding parent " + child);
                 JsonObject grandParent = homepageServlet.findParentsComments(parent.get("parent_id").getAsString());
                 if(grandParent!=null) {
                     child.add("grand_parent", grandParent);
                 }
-                System.out.println("Child after adding grand parent " + child);
             }
             topfolloweesComments.add(child);
         }
