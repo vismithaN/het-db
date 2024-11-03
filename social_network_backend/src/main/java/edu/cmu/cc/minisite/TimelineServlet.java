@@ -139,6 +139,7 @@ public class TimelineServlet extends HttpServlet {
     private void task3(JsonObject result, String id) {
         HomepageServlet homepageServlet = new HomepageServlet();
         JsonArray followeesIDList = getFollowees(id);
+        System.out.println("Followees List " + followeesIDList.toString());
         Bson filter = in("uid",followeesIDList);
         JsonArray followeesComments = homepageServlet.executeQuery(id,filter);
         int size = followeesComments.size();
