@@ -1,12 +1,11 @@
 package edu.cmu.cc.minisite;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.avro.data.Json;
+import org.bson.conversions.Bson;
 import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Values;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -15,6 +14,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import static com.mongodb.client.model.Filters.in;
 
 
 /**
@@ -86,9 +87,7 @@ public class TimelineServlet extends HttpServlet {
             task2(result,id); // Task2
             task3(result,id); // Task3
         } catch (Exception e) {
-            System.err.println("Error: Unable to retrieve comments for user: " + id);
-            e.printStackTrace();
-
+            System.err.println("Error: Unable to retrieve timeline for user: " + id +e.getMessage());
         }
         return result.toString();
     }
@@ -139,9 +138,25 @@ public class TimelineServlet extends HttpServlet {
      */
     private void task3(JsonObject result, String id) {
         HomepageServlet homepageServlet = new HomepageServlet();
-        JsonArray followees = getFollowees(id);
+        JsonArray followeesIDList = getFollowees(id);
+        Bson filter = in("uid",followeesIDList);
+        JsonArray followeesComments = homepageServlet.executeQuery(id,filter);
+        int size = followeesComments.size();
 
-
+        JsonArray topfolloweesComments = new JsonArray();
+        for(int i=0; i<Math.min(size,30); i++){
+            JsonElement child = followeesComments.get(i);
+            JsonObject parent = homepageServlet.findParentsComments(child.getAsJsonObject().get("cid").getAsString());
+            if(parent!=null) {
+                followeesComments.get(i).getAsJsonObject().add("parent", parent);
+                JsonObject grandParent = homepageServlet.findParentsComments(parent.get("cid").getAsString());
+                if(grandParent!=null) {
+                    followeesComments.get(i).getAsJsonObject().add("grandParent", grandParent);
+                }
+            }
+            topfolloweesComments.add(followeesComments.get(i));
+        }
+       result.add("comments", topfolloweesComments);
     }
 
     /**
