@@ -2,24 +2,17 @@
   "referenceGuide":"Cite all the reference sources in the required format. Proper citations will help you avoid unnecessary trouble but does not make it acceptable to copy code. Read the course and university policy statements in this regard. When working with others, limit the discussion to block diagrams and arrows. Do not look at another students' code. Read the JSON semantics and make use of JSON validator from the Internet if needed.",
   "websites":[
     {
-      "title":"<title of the page>",
+      "title":"PreparedStatement interface",
       "url":"https://www.javatpoint.com/PreparedStatement-interface",
-      "code":"<explain in which part of your code did you use the snippet or idea>",
-      "description":"<additional information you may find necessary to provide>"
+      "code":"PreparedStatement stmt = conn.prepareStatement(query);",
+      "description":"Learnt how to create Prepare statement"
     },
     {
-          "title":"<title of the page>",
-          "url":"https://www.tutorialspoint.com/jdbc/jdbc-sample-code.htm",
-          "code":"<explain in which part of your code did you use the snippet or idea>",
-          "description":"<additional information you may find necessary to provide>"
-        }
-
-  ],
-  "collaborators":[
-    {
-      "andrewId":"<collaborator andrewId>",
-      "collaborationType":"<I helped X, X helped me, or we helped each other>",
-      "description":"<describe the idea discussed or shared>"
+      "title":"JDBC - Sample, Example Code",
+      "url":"https://www.tutorialspoint.com/jdbc/jdbc-sample-code.htm",
+      "code":" ResultSet rs = stmt.executeQuery()",
+      "description":"JDBC APIs to execute Queries"
     }
+
   ]
 }

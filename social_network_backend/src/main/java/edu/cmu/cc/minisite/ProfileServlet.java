@@ -121,50 +121,74 @@ public class ProfileServlet extends HttpServlet {
      * @return A JsonObject with the servlet's response
      */
     JsonObject validateLoginAndReturnResult(String name, String pwd) {
+        //Query string to Prepared Statement of the query to perform
         String query = "SELECT username, profile_photo_url FROM users WHERE username = ? AND pwd = ?";
-        return execute(query,name,pwd);
+        return executeQuery(query,name,pwd);
     }
 
     /**
-     * Method to generate PreparedStatement from query and params
+     * Creates a PreparedStatement with the given query and parameters.
      *
-     * @param query  Query to execute
-     * @param params List of query params
-     * @return PreparedStatement
+     * @param query  the SQL query with placeholders.
+     * @param params the parameters to set in the query.
+     * @return a PreparedStatement object with parameters set.
+     * @throws SQLException if a database access error occurs.
      */
     PreparedStatement getPreparedStmt(String query,String ...params) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement(query);
-        for(int i=0;i<params.length;i++) {
-            stmt.setString(i+1, params[i]);//1 specifies the first parameter in the query
+        for(int i = 0; i < params.length; i++) {
+            stmt.setString(i+1, params[i]);// 1 specifies the first parameter in the query
         }
         return stmt;
     }
 
     /**
-     * Method to perform the SQL query, retrieve the results and
-     * construct and return a JsonObject with the expected result
-     *
+     * Executes the query to validates the username and password and retrieves user profile details.
      * @param query  Query to execute
      * @param params List of query params
      * @return A JsonObject with the servlet's response
      */
-    public JsonObject execute(String query, String ...params) {
+    public JsonObject executeQuery(String query, String ...params) {
         JsonObject result = new JsonObject();
-        try {
-            PreparedStatement stmt = getPreparedStmt(query,params);
-            ResultSet rs = stmt.executeQuery();
+        try( PreparedStatement stmt = getPreparedStmt(query, params);
+            ResultSet rs = stmt.executeQuery() ) {
             if (rs.next()) {
-                result.addProperty("name", rs.getString("username"));
-                result.addProperty("profile", rs.getString("profile_photo_url"));
+                result = createUserProfileResponse(rs.getString("username"),
+                        rs.getString("profile_photo_url"));
             } else {
-                result.addProperty("name", "Unauthorized");
-                result.addProperty("profile", "#");
+                result = createUserProfileResponse("Unauthorized", "#");
             }
-            rs.close();
-            stmt.close();
         } catch (SQLException e) {
+            System.err.println("Database error during login validation: " + e.getMessage());
             throw new RuntimeException(e);
         }
         return result;
     }
+
+    /**
+     * Constructs a JSON object for a valid user profile.
+     *
+     * @param username the validated username.
+     * @param profileUrl the profile image URL for the user.
+     * @return a JsonObject containing the user profile information.
+     */
+    private JsonObject createUserProfileResponse(String username, String profileUrl) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("name", username);
+        jsonObject.addProperty("profile", profileUrl);
+        return jsonObject;
+    }
+
+    @Override
+    public void destroy() {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        } catch (SQLException e) {
+            System.err.println("Error closing database connection: " + e.getMessage());
+        }
+        super.destroy();
+    }
 }
+
