@@ -94,6 +94,20 @@ public class FollowerServlet extends HttpServlet {
         writer.close();
     }
 
+    /**
+     * Method to execute cypher queries
+     * @param query Query statement
+     * @param id user parameter
+     * @return StatementResult after executing query
+     */
+    public StatementResult getStatementResult(String query, String id) {
+        try (Session session = driver.session()) {
+            return session.run(query, Values.parameters("id", id));
+        }catch (Exception e) {
+            System.err.println("Error: Unable to retrieve query for user ID: " + id + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Return the name and profile image url of followers, sorted
@@ -107,8 +121,8 @@ public class FollowerServlet extends HttpServlet {
                 "WHERE followee.username = $id " +
                 "RETURN follower.username AS username, follower.url AS url " +
                 "ORDER BY follower.username ASC";
-        try (Session session = driver.session()) {
-            StatementResult rs = session.run(query, Values.parameters("id", id));
+        try{
+            StatementResult rs = getStatementResult(query, id);
             while (rs.hasNext()) {
                 Record record = rs.next();
                 JsonObject follower = new JsonObject();
@@ -117,8 +131,7 @@ public class FollowerServlet extends HttpServlet {
                 followers.add(follower);
             }
         } catch (Exception e) {
-            System.err.println("Error: Unable to retrieve followers for user ID: " + id);
-            e.printStackTrace();
+            System.err.println("Error: Unable to retrieve followers for user ID: " + id + e.getMessage());
         }
         return followers;
     }
