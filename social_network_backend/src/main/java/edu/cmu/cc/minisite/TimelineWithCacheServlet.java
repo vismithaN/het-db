@@ -90,10 +90,12 @@ public class TimelineWithCacheServlet extends HttpServlet {
      * @return timeline of this user
      */
     private String getTimeline(String id) throws IOException {
-        // TODO: implement this method
         JsonObject result = new JsonObject();
+        if(cache.get(id) == null) {
 
-        return result.toString();
+            cache.put(id,result.toString());
+        }
+        return cache.get(id);
     }
 }
 
