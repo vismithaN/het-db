@@ -68,15 +68,24 @@ public class HomepageServlet extends HttpServlet {
      */
     private static MongoCollection<Document> collection;
 
+    private MongoClient mongoClient;
     /**
      * Initialize the connection.
      */
     public HomepageServlet() {
         Objects.requireNonNull(MONGO_HOST);
         MongoClientURI connectionString = new MongoClientURI(URL);
-        MongoClient mongoClient = new MongoClient(connectionString);
+        mongoClient = new MongoClient(connectionString);
         MongoDatabase database = mongoClient.getDatabase(DB_NAME);
         collection = database.getCollection(COLLECTION_NAME);
+    }
+
+    @Override
+    public void destroy() {
+        if (mongoClient != null) {
+            mongoClient.close(); // Close MongoDB client connection
+        }
+        super.destroy();
     }
 
     /**
