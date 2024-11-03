@@ -37,6 +37,5 @@
           "code":"Sorts.orderBy(Sorts.descending("ups"), Sorts.descending("timestamp"))",
           "description":"Combine multiple Sort conditions"
     }
-
   ]
 }
