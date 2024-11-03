@@ -125,7 +125,8 @@ public class HomepageServlet extends HttpServlet {
         try (MongoCursor<Document> cursor = collection.find(filter)
                 .sort(orderBySort).projection(projection).iterator()) {
             while (cursor.hasNext()) {
-                JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
+                Document doc = cursor.next();
+                JsonObject jsonObject = new JsonParser().parse(doc.toJson()).getAsJsonObject();
                 comments.add(jsonObject);
             }
         } catch (Exception e) {
