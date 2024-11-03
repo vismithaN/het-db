@@ -112,6 +112,13 @@ public class ProfileServlet extends HttpServlet {
         writer.close();
     }
 
+    private PreparedStatement getPreparedStmt(String ...params) throws SQLException {
+        String query = "SELECT username, profile_photo_url FROM users WHERE username = ? AND pwd = ?";
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setString(1,name);//1 specifies the first parameter in the query
+        stmt.setString(2,pwd);
+    }
+
     /**
      * Method to perform the SQL query, retrieve the results and
      * construct and return a JsonObject with the expected result
@@ -124,9 +131,7 @@ public class ProfileServlet extends HttpServlet {
         JsonObject result = new JsonObject();
         String query = "SELECT username, profile_photo_url FROM users WHERE username = ? AND pwd = ?";
         try {
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1,name);//1 specifies the first parameter in the query
-            stmt.setString(2,pwd);
+
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 result.addProperty("name", rs.getString("username"));
