@@ -155,12 +155,12 @@ public class TimelineServlet extends HttpServlet {
             JsonObject parent = homepageServlet.findParentsComments(child.get("cid").getAsString());
             if(parent!=null) {
                 child.add("parent", parent);
-                System.out.println("Child after adding parent " + child.getAsString());
+                System.out.println("Child after adding parent " + child);
                 JsonObject grandParent = homepageServlet.findParentsComments(parent.get("cid").getAsString());
                 if(grandParent!=null) {
                     child.add("grand_parent", grandParent);
                 }
-                System.out.println("Child after adding grand parent " + child.getAsString());
+                System.out.println("Child after adding grand parent " + child);
             }
             topfolloweesComments.add(child);
         }
