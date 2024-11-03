@@ -1,6 +1,12 @@
 package edu.cmu.cc.minisite;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.apache.avro.data.Json;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.Values;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -76,19 +82,71 @@ public class TimelineServlet extends HttpServlet {
         JsonObject result = new JsonObject();
         // TODO: implement this method
         try{
-            //Task1
-            ProfileServlet profileServlet = new ProfileServlet();
-            JsonObject userProfile = profileServlet.validateLoginAndReturnResult(id); // Assuming getUserProfile method returns JsonObject with name and profile
-            result.addProperty("name", userProfile.get("name").getAsString());
-            result.addProperty("profile", userProfile.get("profile").getAsString());
-            FollowerServlet followerServlet = new FollowerServlet();
-            HomepageServlet homepageServlet = new HomepageServlet();
+            task1(result,id); // Task1
+            task2(result,id); // Task2
+            task3(result,id); // Task3
         } catch (Exception e) {
             System.err.println("Error: Unable to retrieve comments for user: " + id);
             e.printStackTrace();
 
         }
         return result.toString();
+    }
+
+    /**
+     * Task 4 (2);
+     * Get the follower name and profiles as you did in Task 2
+     * Put them in the result JSON object as one array
+     * @param result JsonObject to populate
+     * @param id userID
+     */
+    private void task2(JsonObject result, String id) {
+        FollowerServlet followerServlet = new FollowerServlet();
+        JsonArray followers = followerServlet.getFollowers(id);
+        result.add("followers", followers);
+    }
+
+    private JsonArray getFollowees(String id) {
+        JsonArray followees = new JsonArray();
+        String query = "MATCH (follower:User)-[:FOLLOWS]->(followee:User) " +
+                "WHERE follower.username = $id " +
+                "RETURN followee.username AS username";
+        try (Session session = driver.session()) {
+            StatementResult rs = session.run(query, Values.parameters("id", id));
+            while (rs.hasNext()) {
+                Record record = rs.next();
+                followees.add(record.get("username").asString());
+            }
+        } catch (Exception e) {
+            System.err.println("Error: Unable to retrieve followees for user ID: " + id);
+            e.printStackTrace();
+        }
+        return followees;
+    }
+
+    /**
+     *  Task 4 (3):
+     *  From the user's followees, get the 30 most popular comments
+     *  and put them in the result JSON object as one JSON array.
+     *  (Remember to find their parent and grandparent)
+     * @param result
+     * @param id
+     */
+    private void task3(JsonObject result, String id) {
+        HomepageServlet homepageServlet = new HomepageServlet();
+
+    }
+
+    /**
+     * Get the name and profile of the user as you did in Task 1
+     * Put them as fields in the result JSON object
+     */
+    private void task1(JsonObject result, String username) throws SQLException, ClassNotFoundException {
+        ProfileServlet profileServlet = new ProfileServlet();
+        String query = "SELECT username, profile_photo_url FROM users WHERE username = ?";
+        JsonObject userProfile = profileServlet.execute(query,username);
+        result.addProperty("name", userProfile.get("name").getAsString());
+        result.addProperty("profile", userProfile.get("profile").getAsString());
     }
 }
 
