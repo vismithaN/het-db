@@ -2,6 +2,7 @@ package edu.cmu.cc.minisite;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -90,12 +91,22 @@ public class TimelineWithCacheServlet extends HttpServlet {
      * @return timeline of this user
      */
     private String getTimeline(String id) throws IOException {
-        JsonObject result = new JsonObject();
+        TimelineServlet timelineServlet = new TimelineServlet();
+        String result;
         if(cache.get(id) == null) {
-
-            cache.put(id,result.toString());
+            result = timelineServlet.getTimeline(id);
+            cacheResponse(result,id);
+        } else {
+            result = cache.get(id);
         }
-        return cache.get(id);
+        return result;
+    }
+
+    private void cacheResponse(String result, String id) {
+        JsonObject  timelineObject = JsonParser.parseString(result).getAsJsonObject();
+        if(timelineObject.get("followers").getAsJsonArray().size() > 300) {
+            cache.put(id, result);
+        }
     }
 }
 
