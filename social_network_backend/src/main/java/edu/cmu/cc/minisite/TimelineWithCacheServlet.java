@@ -43,6 +43,7 @@ import java.util.List;
  */
 public class TimelineWithCacheServlet extends HttpServlet {
 
+    private final TimelineServlet timelineServlet;
     /**
      * You need to use this variable to implement your caching
      * mechanism. Please see {@link Cache#put}, {@link Cache#get}.
@@ -53,7 +54,8 @@ public class TimelineWithCacheServlet extends HttpServlet {
     /**
      * Your initialization code goes here.
      */
-    public TimelineWithCacheServlet() {
+    public TimelineWithCacheServlet() throws SQLException, ClassNotFoundException {
+        this.timelineServlet = new TimelineServlet();
     }
 
     /**
@@ -90,18 +92,22 @@ public class TimelineWithCacheServlet extends HttpServlet {
      * @param id user id
      * @return timeline of this user
      */
-    private String getTimeline(String id) throws IOException {
-        TimelineServlet timelineServlet = new TimelineServlet();
-        String result;
-        if(cache.get(id) == null) {
+    private String getTimeline(String id) {
+        // Check if the timeline is in the cache
+        String result = cache.get(id);
+        if(result == null) {
             result = timelineServlet.getTimeline(id);
             cacheResponse(result,id);
-        } else {
-            result = cache.get(id);
-        }
+        } 
         return result;
     }
 
+    /**
+     * Caches the timeline response if the followers list exceeds a threshold.
+     * Helps in optimizing repeated requests for users with a large following.
+     * @param result The JSON response string to cache.
+     * @param id     The user ID as cache key.
+     */
     private void cacheResponse(String result, String id) {
         JsonObject  timelineObject = JsonParser.parseString(result).getAsJsonObject();
         if(timelineObject.get("followers").getAsJsonArray().size() > 300) {
