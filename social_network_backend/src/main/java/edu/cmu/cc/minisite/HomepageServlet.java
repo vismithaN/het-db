@@ -20,15 +20,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.mongodb.client.model.Sorts;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Values;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Projections.exclude;
-import static com.mongodb.client.model.Sorts.*;
 
 
 /**
@@ -104,7 +98,7 @@ public class HomepageServlet extends HttpServlet {
 
         JsonObject result = new JsonObject();
         String id = request.getParameter("id");
-        result.add("comments", getCommentsMethod(id));
+        result.add("comments", getComments(id));
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter writer = response.getWriter();
@@ -112,37 +106,37 @@ public class HomepageServlet extends HttpServlet {
         writer.close();
     }
 
-
-    public JsonArray getCommentsMethod(String username) {
-        Bson filter = eq("uid",username);
-        return getComments(username,filter);
-    }
-
-
     /**
      * Return all the comments authored by this user.
-     * sorting the comments by ups in descending order (from the largest to the smallest one).
-     * If there is a tie in the ups, sort the comments in descending order by their timestamp.
-     * Input: id(string)
-     * Output: [{comment1_json}, {comment2_json}...]
+     * @param username id(string)
+     * @return [{comment1_json}, {comment2_json}...]
      */
-    public JsonArray getComments(String username,  Bson filter) {
+    public JsonArray getComments(String username) {
+        Bson filter = eq("uid",username);
+        return executeQuery(username,filter);
+    }
+
+    /**
+     * Sorting the comments by ups in descending order (from the largest to the smallest one).
+     *  If there is a tie in the ups, sort the comments in descending order by their timestamp.
+     * @param username id(string)
+     * @param filter Filter Bson
+     * @return [{comment1_json}, {comment2_json}...]
+     */
+
+    public JsonArray executeQuery(String username,  Bson filter) {
         JsonArray comments = new JsonArray();
         Bson orderBySort = Sorts.orderBy(Sorts.descending("ups"), Sorts.descending("timestamp"));
         Bson projection = exclude("_id");
 
-        MongoCursor<Document> cursor = collection.find(filter)
-                .sort(orderBySort).projection(projection).iterator();
-        try {
+        try (MongoCursor<Document> cursor = collection.find(filter)
+                .sort(orderBySort).projection(projection).iterator()) {
             while (cursor.hasNext()) {
                 JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
                 comments.add(jsonObject);
             }
         } catch (Exception e) {
-            System.err.println("Error: Unable to retrieve comments for user: " + username);
-            e.printStackTrace();
-        } finally {
-            cursor.close();
+            System.err.println("Error: Unable to retrieve comments for user: " + username + e.getMessage());
         }
         return comments;
     }
