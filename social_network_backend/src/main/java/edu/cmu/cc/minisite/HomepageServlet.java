@@ -74,14 +74,6 @@ public class HomepageServlet extends HttpServlet {
         collection = database.getCollection(COLLECTION_NAME);
     }
 
-    @Override
-    public void destroy() {
-        if (mongoClient != null) {
-            mongoClient.close(); // Close MongoDB client connection
-        }
-        super.destroy();
-    }
-
     /**
      * Implement this method.
      *
@@ -107,23 +99,24 @@ public class HomepageServlet extends HttpServlet {
     }
 
     /**
-     * Return all the comments authored by this user.
-     * @param username id(string)
-     * @return [{comment1_json}, {comment2_json}...]
+     * Retrieves and returns all comments authored by the specified user.
+     * @param username The user ID of the comment author.
+     * @return JsonArray containing user comments in JSON format.
      */
     public JsonArray getComments(String username) {
+        //Populate filter for username
         Bson filter = eq("uid",username);
         return executeQuery(username,filter);
     }
 
     /**
-     * Sorting the comments by ups in descending order (from the largest to the smallest one).
-     *  If there is a tie in the ups, sort the comments in descending order by their timestamp.
-     * @param username id(string)
-     * @param filter Filter Bson
-     * @return [{comment1_json}, {comment2_json}...]
+     * Executes a MongoDB query to fetch comments.
+     * Sorts by descending "ups" and then by descending "timestamp" in case of ties.
+     * Excludes MongoDB's internal "_id" field
+     * @param username The user ID for which to retrieve comments.
+     * @param filter   The filter to apply to the MongoDB query.
+     * @return JsonArray of comments sorted by popularity and timestamp.
      */
-
     public JsonArray executeQuery(String username,  Bson filter) {
         JsonArray comments = new JsonArray();
         Bson orderBySort = Sorts.orderBy(Sorts.descending("ups"), Sorts.descending("timestamp"));
@@ -139,6 +132,17 @@ public class HomepageServlet extends HttpServlet {
             System.err.println("Error: Unable to retrieve comments for user: " + username + e.getMessage());
         }
         return comments;
+    }
+
+    /**
+     * Closes the MongoDB connection when the servlet is destroyed.
+     */
+    @Override
+    public void destroy() {
+        if (mongoClient != null) {
+            mongoClient.close();
+        }
+        super.destroy();
     }
 }
 

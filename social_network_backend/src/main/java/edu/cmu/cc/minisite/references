@@ -2,16 +2,16 @@
   "referenceGuide":"Cite all the reference sources in the required format. Proper citations will help you avoid unnecessary trouble but does not make it acceptable to copy code. Read the course and university policy statements in this regard. When working with others, limit the discussion to block diagrams and arrows. Do not look at another students' code. Read the JSON semantics and make use of JSON validator from the Internet if needed.",
   "websites":[
     {
-      "title":"PreparedStatement interface",
-      "url":"https://www.javatpoint.com/PreparedStatement-interface",
-      "code":"PreparedStatement stmt = conn.prepareStatement(query);",
-      "description":"Learnt how to create Prepare statement"
+          "title":"PreparedStatement interface",
+          "url":"https://www.javatpoint.com/PreparedStatement-interface",
+          "code":"PreparedStatement stmt = conn.prepareStatement(query);",
+          "description":"Learnt how to create Prepare statement"
     },
     {
-      "title":"JDBC - Sample, Example Code",
-      "url":"https://www.tutorialspoint.com/jdbc/jdbc-sample-code.htm",
-      "code":" ResultSet rs = stmt.executeQuery()",
-      "description":"JDBC APIs to execute Queries"
+          "title":"JDBC - Sample, Example Code",
+          "url":"https://www.tutorialspoint.com/jdbc/jdbc-sample-code.htm",
+          "code":" ResultSet rs = stmt.executeQuery()",
+          "description":"JDBC APIs to execute Queries"
     },
     {
           "title":"Build applications with Neo4j and Java",
@@ -19,32 +19,24 @@
           "code":"session.run(query, Values.parameters("id", id));",
           "description":"official library to interact with a Neo4j instance through a Java application."
     },
-          "title":"<title of the page>",
-          "url":"https://www.tutorialspoint.com/jdbc/jdbc-sample-code.htm",
-          "code":"<explain in which part of your code did you use the snippet or idea>",
-          "description":"<additional information you may find necessary to provide>"
+     {
+          "title":"Neo4j Primer",
+          "url":"https://learn.sailplatform.org/f24-cloud-computing/primer-details/primer-learn-neo4j-prim-kwenippu",
+          "code":"Cypher Query",
+          "description":"Reference for Cypher Query Language"
+     },
+    {
+           "title":"Projections",
+           "url":"https://www.mongodb.com/docs/drivers/java/sync/v5.2/fundamentals/builders/projections/#exclusion",
+           "code":"Bson projection = exclude("_id");",
+           "description":"Exclude _id field of MongoDB"
     },
     {
-     "title":"<title of the page>",
-               "url":"https://www.mongodb.com/docs/drivers/java/sync/v5.2/fundamentals/builders/projections/#exclusion",
-               "code":"<explain in which part of your code did you use the snippet or idea>",
-               "description":"<additional information you may find necessary to provide>"
-    },
-    {
-"title":"<title of the page>",
+          "title":"Combining Sort Criteria",
           "url":"https://www.mongodb.com/docs/drivers/java/sync/v5.2/fundamentals/builders/sort/#combining-sort-criteria",
-          "code":"<explain in which part of your code did you use the snippet or idea>",
-          "description":"<additional information you may find necessary to provide>"
+          "code":"Sorts.orderBy(Sorts.descending("ups"), Sorts.descending("timestamp"))",
+          "description":"Combine multiple Sort conditions"
     }
-
-  ],
-  "collaborators":[
-    {
-              "title":"Neo4j Primer",
-              "url":"https://learn.sailplatform.org/f24-cloud-computing/primer-details/primer-learn-neo4j-prim-kwenippu",
-              "code":"Cypher Query",
-              "description":"Reference for Cypher Query Language"
-        }
 
   ]
 }
