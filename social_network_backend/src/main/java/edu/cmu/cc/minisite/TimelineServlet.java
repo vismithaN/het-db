@@ -10,6 +10,8 @@ import org.neo4j.driver.v1.StatementResult;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -110,8 +112,8 @@ public class TimelineServlet extends HttpServlet {
      * @param id
      * @return
      */
-    private JsonArray getFollowees(String id) {
-        JsonArray followees = new JsonArray();
+    private List<String> getFollowees(String id) {
+        List<String> followees = new ArrayList<>();
         FollowerServlet followerServlet = new FollowerServlet();
         String query = "MATCH (follower:User)-[:FOLLOWS]->(followee:User) " +
                 "WHERE follower.username = $id " +
@@ -138,8 +140,9 @@ public class TimelineServlet extends HttpServlet {
      */
     private void task3(JsonObject result, String id) {
         HomepageServlet homepageServlet = new HomepageServlet();
-        JsonArray followeesIDList = getFollowees(id);
+        List<String> followeesIDList = getFollowees(id);
         System.out.println("Followees List " + followeesIDList.toString());
+
         Bson filter = in("uid",followeesIDList);
         JsonArray followeesComments = homepageServlet.executeQuery(filter);
         int size = followeesComments.size();
