@@ -112,26 +112,46 @@ public class ProfileServlet extends HttpServlet {
         writer.close();
     }
 
-    private PreparedStatement getPreparedStmt(String ...params) throws SQLException {
-        String query = "SELECT username, profile_photo_url FROM users WHERE username = ? AND pwd = ?";
-        PreparedStatement stmt = conn.prepareStatement(query);
-        stmt.setString(1,name);//1 specifies the first parameter in the query
-        stmt.setString(2,pwd);
-    }
 
     /**
-     * Method to perform the SQL query, retrieve the results and
-     * construct and return a JsonObject with the expected result
+     * Method to validate login details and return results
      *
      * @param name  The username supplied via the HttpServletRequest
      * @param pwd   The password supplied via the HttpServletRequest
      * @return A JsonObject with the servlet's response
      */
     JsonObject validateLoginAndReturnResult(String name, String pwd) {
-        JsonObject result = new JsonObject();
         String query = "SELECT username, profile_photo_url FROM users WHERE username = ? AND pwd = ?";
-        try {
+        return execute(query,name,pwd);
+    }
 
+    /**
+     * Method to generate PreparedStatement from query and params
+     *
+     * @param query  Query to execute
+     * @param params List of query params
+     * @return PreparedStatement
+     */
+    PreparedStatement getPreparedStmt(String query,String ...params) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement(query);
+        for(int i=0;i<params.length;i++) {
+            stmt.setString(i+1, params[i]);//1 specifies the first parameter in the query
+        }
+        return stmt;
+    }
+
+    /**
+     * Method to perform the SQL query, retrieve the results and
+     * construct and return a JsonObject with the expected result
+     *
+     * @param query  Query to execute
+     * @param params List of query params
+     * @return A JsonObject with the servlet's response
+     */
+    public JsonObject execute(String query, String ...params) {
+        JsonObject result = new JsonObject();
+        try {
+            PreparedStatement stmt = getPreparedStmt(query,params);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 result.addProperty("name", rs.getString("username"));
