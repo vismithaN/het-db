@@ -19,6 +19,26 @@
           "code":"session.run(query, Values.parameters("id", id));",
           "description":"official library to interact with a Neo4j instance through a Java application."
     },
+          "title":"<title of the page>",
+          "url":"https://www.tutorialspoint.com/jdbc/jdbc-sample-code.htm",
+          "code":"<explain in which part of your code did you use the snippet or idea>",
+          "description":"<additional information you may find necessary to provide>"
+    },
+    {
+     "title":"<title of the page>",
+               "url":"https://www.mongodb.com/docs/drivers/java/sync/v5.2/fundamentals/builders/projections/#exclusion",
+               "code":"<explain in which part of your code did you use the snippet or idea>",
+               "description":"<additional information you may find necessary to provide>"
+    },
+    {
+"title":"<title of the page>",
+          "url":"https://www.mongodb.com/docs/drivers/java/sync/v5.2/fundamentals/builders/sort/#combining-sort-criteria",
+          "code":"<explain in which part of your code did you use the snippet or idea>",
+          "description":"<additional information you may find necessary to provide>"
+    }
+
+  ],
+  "collaborators":[
     {
               "title":"Neo4j Primer",
               "url":"https://learn.sailplatform.org/f24-cloud-computing/primer-details/primer-learn-neo4j-prim-kwenippu",
