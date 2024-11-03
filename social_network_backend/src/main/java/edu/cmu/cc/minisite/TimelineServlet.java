@@ -106,20 +106,25 @@ public class TimelineServlet extends HttpServlet {
         result.add("followers", followers);
     }
 
+    /**
+     * Get Followers List of a user
+     * @param id
+     * @return
+     */
     private JsonArray getFollowees(String id) {
         JsonArray followees = new JsonArray();
+        FollowerServlet followerServlet = new FollowerServlet();
         String query = "MATCH (follower:User)-[:FOLLOWS]->(followee:User) " +
                 "WHERE follower.username = $id " +
                 "RETURN followee.username AS username";
-        try (Session session = driver.session()) {
-            StatementResult rs = session.run(query, Values.parameters("id", id));
+        try {
+            StatementResult rs = followerServlet.getStatementResult(query,id);
             while (rs.hasNext()) {
                 Record record = rs.next();
                 followees.add(record.get("username").asString());
             }
         } catch (Exception e) {
-            System.err.println("Error: Unable to retrieve followees for user ID: " + id);
-            e.printStackTrace();
+            System.err.println("Error: Unable to retrieve followees for user ID: " + id + e.getMessage());
         }
         return followees;
     }
@@ -134,6 +139,8 @@ public class TimelineServlet extends HttpServlet {
      */
     private void task3(JsonObject result, String id) {
         HomepageServlet homepageServlet = new HomepageServlet();
+        JsonArray followees = getFollowees(id);
+
 
     }
 
