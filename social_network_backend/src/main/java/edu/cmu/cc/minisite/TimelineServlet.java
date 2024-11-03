@@ -1,7 +1,6 @@
 package edu.cmu.cc.minisite;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.bson.conversions.Bson;
 import org.neo4j.driver.v1.Record;
@@ -44,11 +43,16 @@ import static com.mongodb.client.model.Filters.in;
  */
 public class TimelineServlet extends HttpServlet {
 
+    private final FollowerServlet followerServlet;
+    private final ProfileServlet profileServlet;
+    private final HomepageServlet homepageServlet;
     /**
      * Your initialization code goes here.
      */
-    public TimelineServlet() {
-
+    public TimelineServlet() throws SQLException, ClassNotFoundException {
+        this.followerServlet = new FollowerServlet();
+        this.profileServlet = new ProfileServlet();
+        this.homepageServlet = new HomepageServlet();
     }
 
     /**
@@ -76,51 +80,62 @@ public class TimelineServlet extends HttpServlet {
     }
 
     /**
-     * Method to get given user's timeline.
-     *
-     * @param id user id
-     * @return timeline of this user
+     * Builds and returns the timeline for the given user ID.
+     * @param id User ID.
+     * @return JSON string of the user's timeline.
      */
     public String getTimeline(String id) {
         JsonObject result = new JsonObject();
-        // TODO: implement this method
         try{
-            task1(result,id); // Task1
-            task2(result,id); // Task2
-            task3(result,id); // Task3
+            addUserProfile(result, id);    // Task (1)
+            addFollowers(result, id);      // Task (2)
+            addFolloweesComments(result, id); // Task (3)
         } catch (Exception e) {
-            System.err.println("Error: Unable to retrieve timeline for user: " + id +e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error: Unable to retrieve timeline for user: " + id + e.getMessage());
         }
         return result.toString();
     }
 
     /**
-     * Task 4 (2);
-     * Get the follower name and profiles as you did in Task 2
-     * Put them in the result JSON object as one array
-     * @param result JsonObject to populate
-     * @param id userID
+     * Adds the user's profile information (name and profile picture) to the result.
+     * @param result JsonObject to populate.
+     * @param id     User ID.
      */
-    private void task2(JsonObject result, String id) {
-        FollowerServlet followerServlet = new FollowerServlet();
+    private void addUserProfile(JsonObject result, String id) throws Exception {
+        String query = "SELECT username, profile_photo_url FROM users WHERE username = ?";
+        try {
+            JsonObject userProfile = profileServlet.executeQuery(query,id);
+            result.addProperty("name", userProfile.get("name").getAsString());
+            result.addProperty("profile", userProfile.get("profile").getAsString());
+        } catch (Exception e) {
+            System.err.println("Error retrieving profile for user ID: " + id + ". " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Adds the user's followers to the result JSON object.
+     * @param result JsonObject to populate.
+     * @param id     User ID.
+     */
+    private void addFollowers(JsonObject result, String id) {
         JsonArray followers = followerServlet.getFollowers(id);
         result.add("followers", followers);
     }
 
+
     /**
-     * Get Followers List of a user
-     * @param id
-     * @return
+     * Retrieves and returns a list of followee IDs for a given user.
+     * @param id User ID.
+     * @return List of followee usernames.
      */
     private List<String> getFollowees(String id) {
         List<String> followees = new ArrayList<>();
-        FollowerServlet followerServlet = new FollowerServlet();
         String query = "MATCH (follower:User)-[:FOLLOWS]->(followee:User) " +
                 "WHERE follower.username = $id " +
                 "RETURN followee.username AS username";
         try {
-            StatementResult rs = followerServlet.getStatementResult(query,id);
+            StatementResult rs = followerServlet.executeQuery(query,id);
             while (rs.hasNext()) {
                 Record record = rs.next();
                 followees.add(record.get("username").asString());
@@ -132,47 +147,48 @@ public class TimelineServlet extends HttpServlet {
     }
 
     /**
-     *  Task 4 (3):
-     *  From the user's followees, get the 30 most popular comments
-     *  and put them in the result JSON object as one JSON array.
-     *  (Remember to find their parent and grandparent)
-     * @param result
-     * @param id
+     * Adds the top 30 comments from the user's followees to the result JSON object.
+     * Each comment includes potential parent and grandparent relationships.
+     * @param result JsonObject to populate.
+     * @param id     User ID.
      */
-    private void task3(JsonObject result, String id) {
-        HomepageServlet homepageServlet = new HomepageServlet();
+    private void addFolloweesComments(JsonObject result, String id) {
         List<String> followeesIDList = getFollowees(id);
-
         Bson filter = in("uid",followeesIDList);
+
         JsonArray followeesComments = homepageServlet.executeQuery(filter);
         int size = followeesComments.size();
 
-        JsonArray topfolloweesComments = new JsonArray();
+        JsonArray topFolloweesComments = new JsonArray();
         for(int i=0; i<Math.min(size,30); i++){
-            JsonObject child = followeesComments.get(i).getAsJsonObject().deepCopy();
-            JsonObject parent = homepageServlet.findParentsComments(child.get("parent_id").getAsString());
-            if(parent!=null) {
-                child.add("parent", parent);
-                JsonObject grandParent = homepageServlet.findParentsComments(parent.get("parent_id").getAsString());
-                if(grandParent!=null) {
-                    child.add("grand_parent", grandParent);
-                }
-            }
-            topfolloweesComments.add(child);
+            JsonObject comment = followeesComments.get(i).getAsJsonObject();
+            addCommentHierarchy(comment);
+            topFolloweesComments.add(comment);
         }
-       result.add("comments", topfolloweesComments);
+       result.add("comments", topFolloweesComments);
     }
 
     /**
-     * Get the name and profile of the user as you did in Task 1
-     * Put them as fields in the result JSON object
+     * Adds parent and grandparent information to a comment if available.
+     * @param comment Comment JSON object.
      */
-    private void task1(JsonObject result, String username) throws SQLException, ClassNotFoundException {
-        ProfileServlet profileServlet = new ProfileServlet();
-        String query = "SELECT username, profile_photo_url FROM users WHERE username = ?";
-        JsonObject userProfile = profileServlet.execute(query,username);
-        result.addProperty("name", userProfile.get("name").getAsString());
-        result.addProperty("profile", userProfile.get("profile").getAsString());
+    private void addCommentHierarchy(JsonObject comment) {
+        String parentId = comment.has("parent_id") ? comment.get("parent_id").getAsString() : null;
+        if (parentId != null) {
+            JsonObject parentComment = homepageServlet.findParentsComments(parentId);
+            if (parentComment != null) {
+                comment.add("parent", parentComment);
+                String grandParentId = parentComment.has("parent_id") ? parentComment.get("parent_id").getAsString() : null;
+                if (grandParentId != null) {
+                    JsonObject grandParentComment = homepageServlet.findParentsComments(grandParentId);
+                    if (grandParentComment != null) {
+                        comment.add("grand_parent", grandParentComment);
+                    }
+                }
+            }
+        }
     }
+
+
 }
 

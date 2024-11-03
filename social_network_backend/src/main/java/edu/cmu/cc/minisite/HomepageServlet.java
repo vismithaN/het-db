@@ -129,11 +129,16 @@ public class HomepageServlet extends HttpServlet {
                 comments.add(jsonObject);
             }
         } catch (Exception e) {
-            System.err.println("Error: Unable to retrieve comments for user: " + username + e.getMessage());
+            System.err.println("Error: Unable to retrieve comments: "  + e.getMessage());
         }
         return comments;
     }
 
+    /**
+     * Finds and returns a comment's parent based on the provided comment ID (cid).
+     * @param cid The comment ID to search for a parent.
+     * @return JsonObject containing parent comment details, or null if not found.
+     */
     public JsonObject findParentsComments(String cid) {
         if (cid != null) {
             Bson filter = eq("cid", cid);
