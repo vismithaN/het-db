@@ -12,7 +12,19 @@
       "url":"https://www.tutorialspoint.com/jdbc/jdbc-sample-code.htm",
       "code":" ResultSet rs = stmt.executeQuery()",
       "description":"JDBC APIs to execute Queries"
-    }
+    },
+    {
+          "title":"Build applications with Neo4j and Java",
+          "url":"https://neo4j.com/docs/java-manual/current/",
+          "code":"session.run(query, Values.parameters("id", id));",
+          "description":"official library to interact with a Neo4j instance through a Java application."
+    },
+    {
+              "title":"Neo4j Primer",
+              "url":"https://learn.sailplatform.org/f24-cloud-computing/primer-details/primer-learn-neo4j-prim-kwenippu",
+              "code":"Cypher Query",
+              "description":"Reference for Cypher Query Language"
+        }
 
   ]
 }

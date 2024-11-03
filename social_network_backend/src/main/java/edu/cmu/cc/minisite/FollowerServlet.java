@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Objects;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +16,6 @@ import org.neo4j.driver.v1.Record;
  * Task 2:
  * Implement your logic to retrieve the followers of this user.
  * You need to send back the Name and Profile Image URL of his/her Followers.
- *
  * You should sort the followers alphabetically in ascending order by Name.
  */
 public class FollowerServlet extends HttpServlet {
@@ -29,10 +27,8 @@ public class FollowerServlet extends HttpServlet {
 
     /**
      * The endpoint of the database.
-     *
      * To avoid hardcoding credentials, use environment variables to include
      * the credentials.
-     *
      * e.g., before running "mvn clean package exec:java" to start the server
      * run the following commands to set the environment variables.
      * export NEO4J_HOST=...
@@ -95,25 +91,24 @@ public class FollowerServlet extends HttpServlet {
     }
 
     /**
-     * Method to execute cypher queries
-     * @param query Query statement
-     * @param id user parameter
-     * @return StatementResult after executing query
+     * Executes a query to retrieve followers from Neo4j.
+     * @param query Cypher query string.
+     * @param id User ID parameter.
+     * @return StatementResult after executing the query.
      */
-    public StatementResult getStatementResult(String query, String id) {
+    public StatementResult executeQuery(String query, String id) {
         try (Session session = driver.session()) {
             return session.run(query, Values.parameters("id", id));
         }catch (Exception e) {
             System.err.println("Error: Unable to retrieve query for user ID: " + id + e.getMessage());
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database query execution failed", e);
         }
     }
 
     /**
-     * Return the name and profile image url of followers, sorted
-     * lexicographically in ascending order by userName.
-     * Input: id(string)
-     * Output: [{name, url}...]
+     * Retrieves followers' names and profile URLs for the given user.
+     * @param id User ID of the target user.
+     * @return A JsonArray containing follower details in JSON format.
      */
     public JsonArray getFollowers(String id) {
         JsonArray followers = new JsonArray();
@@ -121,8 +116,8 @@ public class FollowerServlet extends HttpServlet {
                 "WHERE followee.username = $id " +
                 "RETURN follower.username AS username, follower.url AS url " +
                 "ORDER BY follower.username ASC";
-        try{
-            StatementResult rs = getStatementResult(query, id);
+        try {
+            StatementResult rs = executeQuery(query, id);
             while (rs.hasNext()) {
                 Record record = rs.next();
                 JsonObject follower = new JsonObject();
@@ -131,9 +126,21 @@ public class FollowerServlet extends HttpServlet {
                 followers.add(follower);
             }
         } catch (Exception e) {
-            System.err.println("Error: Unable to retrieve followers for user ID: " + id + e.getMessage());
+            System.err.println("Error: Unable to retrieve followers for user ID: " +
+                    id +  " - "+ e.getMessage());
         }
         return followers;
+    }
+
+    /**
+     * Closes the Neo4j driver when the servlet is destroyed.
+     */
+    @Override
+    public void destroy() {
+        if (driver != null) {
+            driver.close();
+        }
+        super.destroy();
     }
 }
 
