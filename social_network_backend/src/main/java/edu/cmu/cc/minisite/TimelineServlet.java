@@ -81,7 +81,7 @@ public class TimelineServlet extends HttpServlet {
      * @param id user id
      * @return timeline of this user
      */
-    private String getTimeline(String id) {
+    public String getTimeline(String id) {
         JsonObject result = new JsonObject();
         // TODO: implement this method
         try{
