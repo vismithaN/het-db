@@ -104,13 +104,20 @@ public class HomepageServlet extends HttpServlet {
 
         JsonObject result = new JsonObject();
         String id = request.getParameter("id");
-        result.add("comments", getComments(id));
+        result.add("comments", getCommentsMethod(id));
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter writer = response.getWriter();
         writer.write(result.toString());
         writer.close();
     }
+
+
+    public JsonArray getCommentsMethod(String username) {
+        Bson filter = eq("uid",username);
+        return getComments(username,filter);
+    }
+
 
     /**
      * Return all the comments authored by this user.
@@ -119,9 +126,8 @@ public class HomepageServlet extends HttpServlet {
      * Input: id(string)
      * Output: [{comment1_json}, {comment2_json}...]
      */
-    public JsonArray getComments(String username) {
+    public JsonArray getComments(String username,  Bson filter) {
         JsonArray comments = new JsonArray();
-        Bson filter = eq("uid",username);
         Bson orderBySort = Sorts.orderBy(Sorts.descending("ups"), Sorts.descending("timestamp"));
         Bson projection = exclude("_id");
 
