@@ -1,9 +1,12 @@
 package edu.cmu.cc.minisite;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import java.io.IOException;
@@ -14,7 +17,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.mongodb.client.model.Sorts;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.Values;
+
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.regex;
+import static com.mongodb.client.model.Projections.exclude;
+import static com.mongodb.client.model.Sorts.*;
 
 
 /**
@@ -81,12 +95,41 @@ public class HomepageServlet extends HttpServlet {
 
         JsonObject result = new JsonObject();
         String id = request.getParameter("id");
-        // TODO: To be implemented
+        result.add("comments", getComments(id));
         response.setContentType("text/html; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
         PrintWriter writer = response.getWriter();
         writer.write(result.toString());
         writer.close();
+    }
+
+    /**
+     * Return all the comments authored by this user.
+     * sorting the comments by ups in descending order (from the largest to the smallest one).
+     * If there is a tie in the ups, sort the comments in descending order by their timestamp.
+     * Input: id(string)
+     * Output: [{comment1_json}, {comment2_json}...]
+     */
+    public JsonArray getComments(String username) {
+        JsonArray comments = new JsonArray();
+        Bson filter = eq("uid",username);
+        Bson orderBySort = Sorts.orderBy(Sorts.descending("ups"), Sorts.descending("timestamp"));
+        Bson projection = exclude("_id");
+
+        MongoCursor<Document> cursor = collection.find(filter)
+                .sort(orderBySort).projection(projection).iterator();
+        try {
+            while (cursor.hasNext()) {
+                JsonObject jsonObject = new JsonParser().parse(cursor.next().toJson()).getAsJsonObject();
+                comments.add(jsonObject);
+            }
+        } catch (Exception e) {
+            System.err.println("Error: Unable to retrieve comments for user: " + username);
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+        return comments;
     }
 }
 
