@@ -149,16 +149,16 @@ public class TimelineServlet extends HttpServlet {
 
         JsonArray topfolloweesComments = new JsonArray();
         for(int i=0; i<Math.min(size,30); i++){
-            JsonElement child = followeesComments.get(i);
-            JsonObject parent = homepageServlet.findParentsComments(child.getAsJsonObject().get("cid").getAsString());
+            JsonObject child = followeesComments.get(i).getAsJsonObject();
+            JsonObject parent = homepageServlet.findParentsComments(child.get("cid").getAsString());
             if(parent!=null) {
-                followeesComments.get(i).getAsJsonObject().add("parent", parent);
+                child.add("parent", parent);
                 JsonObject grandParent = homepageServlet.findParentsComments(parent.get("cid").getAsString());
                 if(grandParent!=null) {
-                    followeesComments.get(i).getAsJsonObject().add("grand_parent", grandParent);
+                    child.add("grand_parent", grandParent);
                 }
             }
-            topfolloweesComments.add(followeesComments.get(i));
+            topfolloweesComments.add(child);
         }
        result.add("comments", topfolloweesComments);
     }

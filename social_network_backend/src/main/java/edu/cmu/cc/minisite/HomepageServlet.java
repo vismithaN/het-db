@@ -106,18 +106,18 @@ public class HomepageServlet extends HttpServlet {
     public JsonArray getComments(String username) {
         //Populate filter for username
         Bson filter = eq("uid",username);
-        return executeQuery(username,filter);
+        return executeQuery(filter);
     }
 
     /**
      * Executes a MongoDB query to fetch comments.
      * Sorts by descending "ups" and then by descending "timestamp" in case of ties.
      * Excludes MongoDB's internal "_id" field
-     * @param username The user ID for which to retrieve comments.
      * @param filter   The filter to apply to the MongoDB query.
      * @return JsonArray of comments sorted by popularity and timestamp.
      */
-    public JsonArray executeQuery(String username,  Bson filter) {
+
+    public JsonArray executeQuery(Bson filter) {
         JsonArray comments = new JsonArray();
         Bson orderBySort = Sorts.orderBy(Sorts.descending("ups"), Sorts.descending("timestamp"));
         Bson projection = exclude("_id");
@@ -134,6 +134,16 @@ public class HomepageServlet extends HttpServlet {
         return comments;
     }
 
+    public JsonObject findParentsComments(String cid) {
+        if (cid != null) {
+            Bson filter = eq("cid", cid);
+            Bson projection = exclude("_id");
+            Document doc = collection.find(filter).projection(projection).first();
+            return doc != null ? JsonParser.parseString(doc.toJson()).getAsJsonObject() : null;
+        }
+        return null;
+    }
+
     /**
      * Closes the MongoDB connection when the servlet is destroyed.
      */
@@ -144,5 +154,6 @@ public class HomepageServlet extends HttpServlet {
         }
         super.destroy();
     }
+
 }
 
